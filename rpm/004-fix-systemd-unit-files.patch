@@ -1,0 +1,37 @@
+From 0ce86c7535c83fb87c91492b6f73894a94b466db Mon Sep 17 00:00:00 2001
+From: Matti Kosola <matti.kosola@jolla.com>
+Date: Tue, 14 Aug 2018 09:35:50 -0400
+Subject: [PATCH] Fix systemd unit files
+
+Signed-off-by: Matti Kosola <matti.kosola@jolla.com>
+---
+ src/miners/fs/tracker-miner-fs.service.in      | 9 ++++++---
+ src/tracker-extract/tracker-extract.service.in | 9 ++++++---
+ src/tracker-store/tracker-store.service.in     | 9 ++++++---
+ 3 files changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/src/miners/fs/tracker-miner-fs.service.in b/src/miners/fs/tracker-miner-fs.service.in
+index fad973a..1b543f0 100644
+--- a/src/miners/fs/tracker-miner-fs.service.in
++++ b/src/miners/fs/tracker-miner-fs.service.in
+@@ -1,10 +1,13 @@
+ [Unit]
+ Description=Tracker file system data miner
++After=user-session.target
+ 
+ [Service]
+ Type=dbus
+ BusName=org.freedesktop.Tracker1.Miner.Files
+ ExecStart=@libexecdir@/tracker-miner-fs
+-Restart=on-failure
+-# Don't restart after tracker daemon -k (aka tracker-control -k)
+-RestartPreventExitStatus=SIGKILL
++Restart=always
++RestartSec=5
++
++[Install]
++WantedBy=post-user-session.target
+
+-- 
+1.8.3-rc3
+

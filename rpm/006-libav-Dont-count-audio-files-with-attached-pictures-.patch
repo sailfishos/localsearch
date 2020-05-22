@@ -1,0 +1,20 @@
+From 1257c47b2db91af23adf48926280d04e48bdbf21 Sun, 24 May 2020 01:13:51 +0200
+From: Andrew Branson <andrew.branson@jolla.com>
+Date: Sun, 24 May 2020 01:13:17 +0200
+Subject: [PATCH] [libav] Don't count audio files with attached pictures as videos.
+
+
+Album art video streams in various files were causing files to be incorrectly identified as videos.
+diff --git a/src/tracker-extract/tracker-extract-libav.c b/src/tracker-extract/tracker-extract-libav.c
+index 6c786a1..dbd41ff 100644
+--- a/src/tracker-extract/tracker-extract-libav.c
++++ b/src/tracker-extract/tracker-extract-libav.c
+@@ -97,7 +97,7 @@
+ 		}
+ 	}
+ 
+-	if (video_stream) {
++	if (video_stream && !(video_stream->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
+ 		tracker_resource_add_uri(metadata, "rdf:type", "nmm:Video");
+ 
+ 		if (video_stream->codec->width > 0 && video_stream->codec->height > 0) {

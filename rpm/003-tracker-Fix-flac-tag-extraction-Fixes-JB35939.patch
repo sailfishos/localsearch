@@ -1,0 +1,16 @@
+From 8e6735902927e60a2db8c63d7c880e8e469539bf Fri, 16 Dec 2016 14:43:20 +0100
+From: Andrew Branson <andrew.branson@jollamobile.com>
+Date: Wed, 10 Aug 2016 11:53:35 +0200
+Subject: [PATCH] [tracker] Fix flac tag extraction. Fixes JB#35939
+
+diff --git a/src/tracker-extract/10-flac.rule b/src/tracker-extract/10-flac.rule
+index 150301c..6b46588 100644
+--- a/src/tracker-extract/10-flac.rule
++++ b/src/tracker-extract/10-flac.rule
+@@ -1,4 +1,4 @@
+ [ExtractorRule]
+ ModulePath=libextract-flac.so
+-MimeTypes=audio/x-flac
++MimeTypes=audio/flac;audio/x-flac
+ FallbackRdfTypes=nfo:Audio;
+

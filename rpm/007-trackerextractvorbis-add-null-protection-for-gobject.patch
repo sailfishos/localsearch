@@ -1,0 +1,22 @@
+From aa36fa18c1612a3fddf0df4ca6b94594731217e4 Wed, 27 May 2020 17:47:14 +0200
+From: Pekka Vuorela <pekka.vuorela@jolla.com>
+Date: Wed, 27 May 2020 17:46:36 +0200
+Subject: [PATCH] tracker-extract-vorbis: add null protection for g_object_unref
+
+diff --git a/src/tracker-extract/tracker-extract-vorbis.c b/src/tracker-extract/tracker-extract-vorbis.c
+index 6a4df3b..2de648a 100644
+--- a/src/tracker-extract/tracker-extract-vorbis.c
++++ b/src/tracker-extract/tracker-extract-vorbis.c
+@@ -239,8 +239,10 @@
+ 		tracker_resource_set_relation (metadata, "nmm:musicAlbumDisc", album_disc);
+ 
+ 		g_object_unref (album_disc);
+-		g_object_unref (mb_release_id);
+-		g_object_unref (mb_release_group_id);
++		if (mb_release_id)
++			g_object_unref (mb_release_id);
++		if (mb_release_group_id)
++			g_object_unref (mb_release_group_id);
+ 	}
+ 
+ 	g_free (vd.track_count);

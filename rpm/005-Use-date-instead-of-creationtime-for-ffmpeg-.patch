@@ -1,0 +1,53 @@
+From d1fc08456ad545a7bebb0f207a658dd1045b45b0 Fri, 17 Apr 2020 16:41:33 +0200
+From: Andrew Branson <andrew.branson@jolla.com>
+Date: Fri, 17 Apr 2020 13:06:29 +0200
+Subject: [PATCH] [extract] Use 'date' instead of 'creation_time' for ffmpeg music indexing. Fixes JB#49647
+
+
+Only use ffmpeg 'creation_time' tag for video indexing. For music files, this will be the timestamp of when the file was ripped rather than the year of release of the album, and will cause each track to get indexed in its own separate album.
+diff --git a/src/tracker-extract/tracker-extract-libav.c b/src/tracker-extract/tracker-extract-libav.c
+index b2055ba..c9bec80 100644
+--- a/src/tracker-extract/tracker-extract-libav.c
++++ b/src/tracker-extract/tracker-extract-libav.c
+@@ -90,13 +90,6 @@
+ 
+ 	metadata = tracker_resource_new (NULL);
+ 
+-	if ((tag = av_dict_get (format->metadata, "creation_time", NULL, 0))) {
+-		content_created = tracker_date_guess (tag->value);
+-		if (content_created) {
+-			tracker_resource_set_string (metadata, "nie:contentCreated", content_created);
+-		}
+-	}
+-
+ 	if (audio_stream) {
+ 		if (audio_stream->codec->sample_rate > 0) {
+ 			tracker_resource_set_int64 (metadata, "nfo:sampleRate", audio_stream->codec->sample_rate);
+@@ -148,6 +141,13 @@
+ 			tracker_resource_set_int64 (metadata, "nmm:season", atoi(tag->value));
+ 		}
+ 
++		if ((tag = av_dict_get (format->metadata, "creation_time", NULL, 0))) {
++			content_created = tracker_date_guess (tag->value);
++			if (content_created) {
++				tracker_resource_set_string (metadata, "nie:contentCreated", content_created);
++			}
++		}
++
+ 	} else if (audio_stream) {
+ 		TrackerResource *album_artist = NULL, *performer = NULL;
+ 		char *album_artist_name = NULL;
+@@ -186,6 +186,13 @@
+ 			performer = tracker_extract_new_artist (tag->value);
+ 		}
+ 
++		if ((tag = av_dict_get (format->metadata, "date", NULL, 0))) {
++			content_created = tracker_date_guess (tag->value);
++			if (content_created) {
++				tracker_resource_set_string (metadata, "nie:contentCreated", content_created);
++			}
++		}
++
+ 		if (performer) {
+ 			tracker_resource_set_relation (metadata, "nmm:performer", performer);
+ 		}
