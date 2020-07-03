@@ -1,4 +1,5 @@
 [ExtractorRule]
+ModulePath=libextract-text.so
 MimeTypes=application/rtf;text/rtf;
 FallbackRdfTypes=nfo:Document;nfo:TextDocument;nfo:PaginatedTextDocument;
 
