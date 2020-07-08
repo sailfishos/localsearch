@@ -79,15 +79,16 @@ all types of files and other first class objects.
        -Dguarantee_metadata=true -Dminer_rss=false \
        -Draw=disabled -Dcue=disabled -Dxps=disabled -Diso=disabled \
        -Dwriteback=false \
-       -Dgeneric_media_extractor=libav
+       -Dgeneric_media_extractor=libav \
+       -Dsystemd_user_services=%{_userunitdir}
 
 %install
 rm -rf %{buildroot}
 
 %meson_install
 rm %{buildroot}/etc/xdg/autostart/tracker-*.desktop
-mkdir -p %{buildroot}%{_libdir}/systemd/user/post-user-session.target.wants
-ln -s ../tracker-miner-fs.service %{buildroot}%{_libdir}/systemd/user/post-user-session.target.wants/
+mkdir -p %{buildroot}%{_userunitdir}/post-user-session.target.wants
+ln -s ../tracker-miner-fs.service %{buildroot}%{_userunitdir}/post-user-session.target.wants/
 
 cp -a %{SOURCE1} %{buildroot}%{_datadir}/tracker-miners/extract-rules/
 
@@ -126,7 +127,7 @@ fi
 %{_libexecdir}/tracker-extract
 %{_libexecdir}/tracker-miner-fs
 %license COPYING COPYING.GPL COPYING.LGPL
-%{_libdir}/systemd/user/tracker-miner-fs.service
-%{_libdir}/systemd/user/tracker-extract.service
-%{_libdir}/systemd/user/post-user-session.target.wants/tracker-miner-fs.service
+%{_userunitdir}/tracker-miner-fs.service
+%{_userunitdir}/tracker-extract.service
+%{_userunitdir}/post-user-session.target.wants/tracker-miner-fs.service
 
