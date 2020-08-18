@@ -2,7 +2,7 @@ Name:       tracker-miners
 Summary:    The Tracker indexer daemon (tracker-miner-fs) and tools to extract metadata from many different filetypes.
 Version:    2.3.3
 Release:    1
-License:    GPLv2+ and LGPLv2.1+
+License:    GPLv2+ and LGPLv2+
 URL:        https://gitlab.gnome.org/GNOME/%{name}/
 Source0:    https://gitlab.gnome.org/GNOME/%{name}/-/archive/%{version}/%{name}-%{version}.tar.bz2
 Source1:    10-rtf.rule
