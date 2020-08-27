@@ -1,0 +1,28 @@
+From 043d92c8e621eb480f16068cfd5ed1ecf917e7f6 Mon, 31 Aug 2020 14:27:21 +0200
+From: Andrew Branson <andrew.branson@jolla.com>
+Date: Fri, 28 Aug 2020 00:04:51 +0200
+Subject: [PATCH] [seccomp] Prevent tracker-extract failing when seccomp loading fails on older kernels. JB#50862
+
+diff --git a/src/libtracker-miners-common/tracker-seccomp.c b/src/libtracker-miners-common/tracker-seccomp.c
+index aabed15..88af443 100644
+--- a/src/libtracker-miners-common/tracker-seccomp.c
++++ b/src/libtracker-miners-common/tracker-seccomp.c
+@@ -219,11 +219,16 @@
+ #endif
+ 
+ 	g_debug ("Loading seccomp rules.");
+-
+-	if (seccomp_load (ctx) >= 0) {
++	int rv = seccomp_load (ctx);
++	if (rv >= 0) {
+ 		/* Any seccomp filters loaded into the kernel are not affected. */
+ 		seccomp_release (ctx);
+ 		return TRUE;
++	} else if (rv == -EINVAL) {
++		/* Not supported, continue anyway */
++		g_critical ("Seccomp-bpf not supported by host. Continuing without seccomp filters.");
++		seccomp_release (ctx);
++		return TRUE;
+ 	}
+ 
+ out:
