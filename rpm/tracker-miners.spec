@@ -13,6 +13,7 @@ Patch4:     004-fix-systemd-unit-files.patch
 Patch5:     005-Use-date-instead-of-creationtime-for-ffmpeg-.patch
 Patch6:     006-libav-Dont-count-audio-files-with-attached-pictures-.patch
 Patch7:     007-trackerextractvorbis-add-null-protection-for-gobject.patch
+Patch8:     008-seccomp-Prevent-trackerextract-failing-when-seccomp-.patch
 
 Requires:   unzip
 Requires:   systemd
