@@ -1,10 +1,14 @@
-From 8e6735902927e60a2db8c63d7c880e8e469539bf Fri, 16 Dec 2016 14:43:20 +0100
+From 7cf09b79d058fda07822a06726b606d8556bada3 Mon Sep 17 00:00:00 2001
 From: Andrew Branson <andrew.branson@jollamobile.com>
 Date: Wed, 10 Aug 2016 11:53:35 +0200
 Subject: [PATCH] [tracker] Fix flac tag extraction. Fixes JB#35939
 
+---
+ src/tracker-extract/10-flac.rule | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
 diff --git a/src/tracker-extract/10-flac.rule b/src/tracker-extract/10-flac.rule
-index 150301c..6b46588 100644
+index 088e72285..4e1924364 100644
 --- a/src/tracker-extract/10-flac.rule
 +++ b/src/tracker-extract/10-flac.rule
 @@ -1,4 +1,4 @@
@@ -13,4 +17,6 @@ index 150301c..6b46588 100644
 -MimeTypes=audio/x-flac
 +MimeTypes=audio/flac;audio/x-flac
  FallbackRdfTypes=nfo:Audio;
+-- 
+2.28.0
 
