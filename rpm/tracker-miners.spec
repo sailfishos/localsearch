@@ -10,7 +10,8 @@ Patch1:     0001-Tracker-config-overrides.patch
 Patch2:     0002-tracker-Fix-flac-tag-extraction.-Fixes-JB-35939.patch
 Patch3:     0003-Fix-systemd-unit-files.patch
 Patch4:     0004-seccomp-Prevent-tracker-extract-failing-when-seccomp.patch
-Patch5:     0005-seccomp-Remove-statx-syscall-from-tracker-seccomp.patch
+#Patch5:     0005-seccomp-Remove-statx-syscall-from-tracker-seccomp.patch
+Patch6:     0006-seccomp.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext
