@@ -1,0 +1,26 @@
+From 0274a8ce5fba448d37d6c3249f8b15885c583827 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Matti=20Lehtim=C3=A4ki?= <matti.lehtimaki@jolla.com>
+Date: Thu, 22 Oct 2020 19:08:24 +0300
+Subject: [PATCH] libtracker-miners-common: Allow fstatat64 and newfstatat
+ syscalls
+
+---
+ src/libtracker-miners-common/tracker-seccomp.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/libtracker-miners-common/tracker-seccomp.c b/src/libtracker-miners-common/tracker-seccomp.c
+index c0327eb08..01887e829 100644
+--- a/src/libtracker-miners-common/tracker-seccomp.c
++++ b/src/libtracker-miners-common/tracker-seccomp.c
+@@ -91,6 +91,8 @@ tracker_seccomp_init (void)
+ 	/* Basic filesystem access */
+ 	ALLOW_RULE (fstat);
+ 	ALLOW_RULE (fstat64);
++	ALLOW_RULE (fstatat64);
++	ALLOW_RULE (newfstatat);
+ 	ALLOW_RULE (stat);
+ 	ALLOW_RULE (stat64);
+ 	ALLOW_RULE (statfs);
+-- 
+2.25.1
+
