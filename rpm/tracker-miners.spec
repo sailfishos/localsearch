@@ -6,6 +6,7 @@ License:    LGPLv2+ and GPLv2+
 URL:        https://wiki.gnome.org/Projects/Tracker
 Source0:    %{name}-%{version}.tar.bz2
 Source1:    10-rtf.rule
+Source2:    10-csv.rule
 Patch1:     0001-Tracker-config-overrides.patch
 Patch2:     0002-Fix-systemd-unit-files.patch
 Patch3:     0003-Prevent-tracker-extract-failing-when-seccomp-loading.patch
@@ -88,6 +89,7 @@ mkdir -p %{buildroot}%{_userunitdir}/post-user-session.target.wants
 ln -s ../tracker-miner-fs-3.service %{buildroot}%{_userunitdir}/post-user-session.target.wants/
 
 cp -a %{SOURCE1} %{buildroot}%{_datadir}/tracker3-miners/extract-rules/
+cp -a %{SOURCE2} %{buildroot}%{_datadir}/tracker3-miners/extract-rules/
 
 %find_lang tracker3-miners
 
