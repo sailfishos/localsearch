@@ -1,7 +1,7 @@
 From 8713cc71aa5f4eb2e3789b3746bfa57f9f1a1faa Mon Sep 17 00:00:00 2001
 From: Andrew Branson <andrew.branson@jolla.com>
 Date: Fri, 28 Aug 2020 00:04:51 +0200
-Subject: [PATCH 3/3] Prevent tracker-extract failing when seccomp loading
+Subject: [PATCH 3/4] Prevent tracker-extract failing when seccomp loading
  fails on older kernels. JB#50862
 
 ---
