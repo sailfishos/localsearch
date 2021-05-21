@@ -1,4 +1,4 @@
-From b108554540b34ee861e78b0805627ec6f70757b0 Mon Sep 17 00:00:00 2001
+From dac4b7811dcb4f7f000741945c06874f8eac61ae Mon Sep 17 00:00:00 2001
 From: Islam Amer <islam.amer@jollamobile.com>
 Date: Wed, 12 Nov 2014 18:10:53 +0200
 Subject: [PATCH 1/4] Tracker config overrides

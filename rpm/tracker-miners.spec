@@ -10,7 +10,7 @@ Source2:    10-csv.rule
 Patch1:     0001-Tracker-config-overrides.patch
 Patch2:     0002-Fix-systemd-unit-files.patch
 Patch3:     0003-Prevent-tracker-extract-failing-when-seccomp-loading.patch
-Patch4:     0004-Separate-artist-and-performer-on-libav-extractor.patch
+Patch4:     0004-Add-also-fileSize-to-the-basic-set-of-file-info-on-a.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext
