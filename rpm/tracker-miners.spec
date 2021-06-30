@@ -1,6 +1,6 @@
 Name:       tracker-miners
 Summary:    Tracker miners and metadata extractors
-Version:    3.1.1
+Version:    3.1.2
 Release:    1
 License:    LGPLv2+ and GPLv2+
 URL:        https://wiki.gnome.org/Projects/Tracker

@@ -1,4 +1,4 @@
-From 6f4c9c314320a54639fa1a34eafb63cb10e3a9e2 Mon Sep 17 00:00:00 2001
+From b4232d86c9d36c38cd4a78f2d797f71963c4d14d Mon Sep 17 00:00:00 2001
 From: Andrew Branson <andrew.branson@jolla.com>
 Date: Fri, 28 Aug 2020 00:04:51 +0200
 Subject: [PATCH 3/4] Prevent tracker-extract failing when seccomp loading
