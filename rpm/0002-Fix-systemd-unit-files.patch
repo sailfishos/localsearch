@@ -1,7 +1,7 @@
-From 368d48eb6f2500e12f71eaaa1c930e47718e9037 Mon Sep 17 00:00:00 2001
+From 0f993571f3bc4ad0030eecd4142524978984408c Mon Sep 17 00:00:00 2001
 From: Matti Kosola <matti.kosola@jolla.com>
 Date: Tue, 14 Aug 2018 09:35:50 -0400
-Subject: [PATCH 2/4] Fix systemd unit files
+Subject: [PATCH 2/5] Fix systemd unit files
 
 Signed-off-by: Matti Kosola <matti.kosola@jolla.com>
 ---
@@ -34,5 +34,5 @@ index 373a7c0ea..590248f85 100644
 -WantedBy=gnome-session.target
 +WantedBy=post-user-session.target
 -- 
-2.30.2
+2.31.1
 

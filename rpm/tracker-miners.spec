@@ -11,6 +11,7 @@ Patch1:     0001-Tracker-config-overrides.patch
 Patch2:     0002-Fix-systemd-unit-files.patch
 Patch3:     0003-Prevent-tracker-extract-failing-when-seccomp-loading.patch
 Patch4:     0004-Add-also-fileSize-to-the-basic-set-of-file-info-on-a.patch
+Patch5:     0005-Fix-database-corruption-caused-by-the-miner-being-re.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext
