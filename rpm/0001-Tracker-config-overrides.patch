@@ -1,7 +1,7 @@
-From c0c0133acd0d50b9cc3647a54c04b8d50f94407a Mon Sep 17 00:00:00 2001
+From c4cec5e42129ad386425ee64d5dc963a6a761dcf Mon Sep 17 00:00:00 2001
 From: Islam Amer <islam.amer@jollamobile.com>
 Date: Wed, 12 Nov 2014 18:10:53 +0200
-Subject: [PATCH] Tracker config overrides
+Subject: [PATCH 1/5] Tracker config overrides
 
 [schema] change default miner initial sleep to 30 seconds to not hammer the system during bootup
 Set the default delay for GraphUpdated to 350 instead of upstream default of 1000. Helps fixing JB#11570
@@ -12,14 +12,14 @@ Changing the default settings in the schema should hopefully reduce issues when 
 [schema] exclude Android folder from indexing
 Harmonize ignore folders
 ---
- ...reedesktop.Tracker.Miner.Files.gschema.xml | 20 +++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ ...g.freedesktop.Tracker.Miner.Files.gschema.xml | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/data/org.freedesktop.Tracker.Miner.Files.gschema.xml b/data/org.freedesktop.Tracker.Miner.Files.gschema.xml
-index 4a3db49f0..a4cb1ce5b 100644
+index dd4a106a6..c53c245a5 100644
 --- a/data/org.freedesktop.Tracker.Miner.Files.gschema.xml
 +++ b/data/org.freedesktop.Tracker.Miner.Files.gschema.xml
-@@ -29,7 +29,7 @@ Boston, MA  02110-1301, USA.
+@@ -23,14 +23,14 @@ Boston, MA  02110-1301, USA.
        <summary>Initial sleep</summary>
        <description>Initial sleep time, in seconds.</description>
        <range min="0" max="1000"/>
@@ -27,8 +27,7 @@ index 4a3db49f0..a4cb1ce5b 100644
 +      <default>30</default>
      </key>
  
-     <key name="sched-idle" enum="org.freedesktop.TrackerMiners.TrackerSchedIdle">
-@@ -46,7 +46,7 @@ Boston, MA  02110-1301, USA.
+     <key name="throttle" type="i">
        <summary>Throttle</summary>
        <description>Indexing speed, the higher the slower.</description>
        <range min="0" max="20"/>
@@ -37,7 +36,7 @@ index 4a3db49f0..a4cb1ce5b 100644
      </key>
  
      <key name="low-disk-space-limit" type="i">
-@@ -64,7 +64,7 @@ Boston, MA  02110-1301, USA.
+@@ -48,7 +48,7 @@ Boston, MA  02110-1301, USA.
  	disables it entirely.
        </description>
        <range min="-2" max="365"/>
@@ -46,7 +45,7 @@ index 4a3db49f0..a4cb1ce5b 100644
      </key>
  
      <key name="removable-days-threshold" type="i">
-@@ -75,7 +75,7 @@ Boston, MA  02110-1301, USA.
+@@ -59,7 +59,7 @@ Boston, MA  02110-1301, USA.
  	maximum is 365.
        </description>
        <range min="0" max="365"/>
@@ -55,14 +54,7 @@ index 4a3db49f0..a4cb1ce5b 100644
      </key>
  
      <key name="enable-monitors" type="b">
-@@ -87,13 +87,13 @@ Boston, MA  02110-1301, USA.
-     <key name="enable-writeback" type="b">
-       <summary>Enable writeback</summary>
-       <description>Set to false to completely disable any file writeback</description>
--      <default>true</default>
-+      <default>false</default>
-     </key>
- 
+@@ -71,7 +71,7 @@ Boston, MA  02110-1301, USA.
      <key name="index-removable-devices" type="b">
        <summary>Index removable devices</summary>
        <description>Set to true to enable indexing mounted directories for removable devices.</description>
@@ -71,25 +63,7 @@ index 4a3db49f0..a4cb1ce5b 100644
      </key>
  
      <key name="index-optical-discs" type="b">
-@@ -126,7 +126,7 @@ Boston, MA  02110-1301, USA.
- 
- 	See /etc/xdg/user-dirs.defaults and $HOME/.config/user-dirs.default
-       </description>
--      <default>[ '&amp;DESKTOP', '&amp;DOCUMENTS', '&amp;MUSIC', '&amp;PICTURES', '&amp;VIDEOS' ]</default>
-+      <default>[ '&amp;DESKTOP', '&amp;DOCUMENTS', '&amp;DOWNLOAD', '&amp;MUSIC', '&amp;PICTURES', '&amp;VIDEOS', '$HOME/android_storage/DCIM', '$HOME/android_storage/Download', '$HOME/android_storage/Pictures', '$HOME/android_storage/Podcasts', '$HOME/android_storage/Music' ]</default>
-     </key>
- 
-     <key name="index-single-directories" type="as">
-@@ -138,7 +138,7 @@ Boston, MA  02110-1301, USA.
- 
- 	See /etc/xdg/user-dirs.defaults and $HOME/.config/user-dirs.default
-       </description>
--      <default>[ '$HOME', '&amp;DOWNLOAD' ]</default>
-+      <default>[ ]</default>
-     </key>
- 
-     <key name="ignored-files" type="as">
-@@ -150,13 +150,13 @@ Boston, MA  02110-1301, USA.
+@@ -141,13 +141,13 @@ Boston, MA  02110-1301, USA.
      <key name="ignored-directories" type="as">
        <summary>Ignored directories</summary>
        <description>List of directories to avoid</description>
@@ -99,12 +73,13 @@ index 4a3db49f0..a4cb1ce5b 100644
  
      <key name="ignored-directories-with-content" type="as">
        <summary>Ignored directories with content</summary>
-       <description>Avoid any directory containing a file blacklisted here</description>
+-      <description>Avoid any directory containing a file blocklisted here</description>
 -      <default>[ '.trackerignore', '.git', '.hg', '.nomedia' ]</default>
++      <description>Avoid any directory containing a file blacklisted here</description>
 +      <default>[ '.trackerignore', 'backup.metadata', '.nomedia' ]</default>
      </key>
    </schema>
  </schemalist>
 -- 
-2.29.2
+2.31.1
 

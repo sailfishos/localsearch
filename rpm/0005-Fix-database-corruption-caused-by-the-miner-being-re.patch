@@ -1,0 +1,38 @@
+From 4fb7790b946c2903836c42d2cfb8fee0bf4991ce Mon Sep 17 00:00:00 2001
+From: Pekka Vuorela <pekka.vuorela@jolla.com>
+Date: Wed, 7 Jul 2021 13:05:57 +0300
+Subject: [PATCH 5/5] Fix database corruption caused by the miner being
+ restarted during setup.
+
+Install the signal handlers before starting database setup so if the
+process is terminated part way through it won't actually exit until the
+event loop is started and the queued signal handler is processed.
+---
+ src/miners/fs/tracker-main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/miners/fs/tracker-main.c b/src/miners/fs/tracker-main.c
+index f9ccca3aa..4570dd97d 100644
+--- a/src/miners/fs/tracker-main.c
++++ b/src/miners/fs/tracker-main.c
+@@ -1033,6 +1033,8 @@ main (gint argc, gchar *argv[])
+ 
+ 	main_loop = g_main_loop_new (NULL, FALSE);
+ 
++	initialize_signal_handler ();
++
+ 	if (no_daemon) {
+ 		g_debug ("tracker-miner-fs-3 running in --no-daemon mode.");
+ 	} else if (domain_ontology_name) {
+@@ -1176,8 +1178,6 @@ main (gint argc, gchar *argv[])
+ 	if (do_crawling)
+ 		miner_start (miner_files, config, do_mtime_checking);
+ 
+-	initialize_signal_handler ();
+-
+ 	/* Go, go, go! */
+ 	g_main_loop_run (main_loop);
+ 
+-- 
+2.31.1
+

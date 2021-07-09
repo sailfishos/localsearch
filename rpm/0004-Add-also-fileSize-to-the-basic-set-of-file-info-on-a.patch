@@ -1,0 +1,30 @@
+From dc638a9a6ce6e0ef2bff3a8bb73a38da2fd4a2eb Mon Sep 17 00:00:00 2001
+From: Pekka Vuorela <pekka.vuorela@jolla.com>
+Date: Wed, 19 May 2021 13:26:07 +0300
+Subject: [PATCH 4/5] Add also fileSize to the basic set of file info on all
+ the graph
+
+No need to depend on FileSystem graph to have the sizes.
+
+Related: https://gitlab.gnome.org/GNOME/tracker/-/issues/221
+---
+ src/miners/fs/tracker-miner-files.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/miners/fs/tracker-miner-files.c b/src/miners/fs/tracker-miner-files.c
+index 098b105dc..fb7b3152f 100644
+--- a/src/miners/fs/tracker-miner-files.c
++++ b/src/miners/fs/tracker-miner-files.c
+@@ -2162,6 +2162,9 @@ miner_files_process_file (TrackerMinerFS      *fs,
+ 		time_str = g_date_time_format_iso8601 (modified);
+ 		tracker_resource_set_string (graph_file, "nfo:fileLastModified", time_str);
+ 		g_free (time_str);
++
++		tracker_resource_set_int64 (graph_file, "nfo:fileSize",
++		                            g_file_info_get_size (file_info));
+ 	}
+ 
+ 	if (delete_properties_sparql)
+-- 
+2.31.1
+
