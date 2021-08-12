@@ -1,0 +1,76 @@
+From b0e5d5695782599bf7d32919a60826bf77c01953 Mon Sep 17 00:00:00 2001
+From: Simo Piiroinen <simo.piiroinen@jolla.com>
+Date: Thu, 12 Aug 2021 08:26:21 +0300
+Subject: [PATCH] Allow D-Bus activation only through systemd
+
+Starting D-Bus services should happen only via systemd. Using a dummy
+Exec line in D-Bus configuration ensures that systemd can't be bypassed.
+
+Signed-off-by: Simo Piiroinen <simo.piiroinen@jolla.com>
+---
+ src/miners/fs/org.freedesktop.Tracker3.Miner.Files.service.in   | 2 +-
+ src/miners/rss/org.freedesktop.Tracker3.Miner.RSS.service.in    | 2 +-
+ .../org.freedesktop.Tracker3.Miner.Files.Control.service.in     | 2 +-
+ .../org.freedesktop.Tracker3.Miner.Extract.service.in           | 2 +-
+ .../org.freedesktop.Tracker3.Writeback.service.in               | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/miners/fs/org.freedesktop.Tracker3.Miner.Files.service.in b/src/miners/fs/org.freedesktop.Tracker3.Miner.Files.service.in
+index cc35460dd..9db5967f4 100644
+--- a/src/miners/fs/org.freedesktop.Tracker3.Miner.Files.service.in
++++ b/src/miners/fs/org.freedesktop.Tracker3.Miner.Files.service.in
+@@ -1,6 +1,6 @@
+ [D-BUS Service]
+ Name=@DOMAIN_PREFIX@.Tracker3.Miner.Files
+-Exec=@libexecdir@/tracker-miner-fs-3 @DOMAIN_ONTOLOGY_OPTIONS@ @MINER_FILES_INITIAL_SLEEP@
++Exec=/bin/false
+ @SYSTEMD_SERVICE@
+ 
+ # Miner details needed for tracker-control
+diff --git a/src/miners/rss/org.freedesktop.Tracker3.Miner.RSS.service.in b/src/miners/rss/org.freedesktop.Tracker3.Miner.RSS.service.in
+index 359db6ecc..566801627 100644
+--- a/src/miners/rss/org.freedesktop.Tracker3.Miner.RSS.service.in
++++ b/src/miners/rss/org.freedesktop.Tracker3.Miner.RSS.service.in
+@@ -1,6 +1,6 @@
+ [D-BUS Service]
+ Name=org.freedesktop.Tracker3.Miner.RSS
+-Exec=@libexecdir@/tracker-miner-rss-3
++Exec=/bin/false
+ SystemdService=tracker-miner-rss-3.service
+ 
+ # Miner details needed for tracker-control
+diff --git a/src/tracker-control/org.freedesktop.Tracker3.Miner.Files.Control.service.in b/src/tracker-control/org.freedesktop.Tracker3.Miner.Files.Control.service.in
+index 261a2f5bb..fde240041 100644
+--- a/src/tracker-control/org.freedesktop.Tracker3.Miner.Files.Control.service.in
++++ b/src/tracker-control/org.freedesktop.Tracker3.Miner.Files.Control.service.in
+@@ -1,4 +1,4 @@
+ [D-BUS Service]
+ Name=@DOMAIN_PREFIX@.Tracker3.Miner.Files.Control
+-Exec=@libexecdir@/tracker-miner-fs-control-3
++Exec=/bin/false
+ @SYSTEMD_SERVICE@
+diff --git a/src/tracker-extract/org.freedesktop.Tracker3.Miner.Extract.service.in b/src/tracker-extract/org.freedesktop.Tracker3.Miner.Extract.service.in
+index cd396057a..d56f103cc 100644
+--- a/src/tracker-extract/org.freedesktop.Tracker3.Miner.Extract.service.in
++++ b/src/tracker-extract/org.freedesktop.Tracker3.Miner.Extract.service.in
+@@ -1,6 +1,6 @@
+ [D-BUS Service]
+ Name=@DOMAIN_PREFIX@.Tracker3.Miner.Extract
+-Exec=@libexecdir@/tracker-extract-3 @DOMAIN_ONTOLOGY_OPTIONS@
++Exec=/bin/false
+ @SYSTEMD_SERVICE@
+ 
+ # Miner details needed for tracker-control
+diff --git a/src/tracker-writeback/org.freedesktop.Tracker3.Writeback.service.in b/src/tracker-writeback/org.freedesktop.Tracker3.Writeback.service.in
+index 484fa2f81..8bc3425c4 100644
+--- a/src/tracker-writeback/org.freedesktop.Tracker3.Writeback.service.in
++++ b/src/tracker-writeback/org.freedesktop.Tracker3.Writeback.service.in
+@@ -1,4 +1,4 @@
+ [D-BUS Service]
+ Name=org.freedesktop.Tracker3.Writeback
+-Exec=@libexecdir@/tracker-writeback-3
++Exec=/bin/false
+ SystemdService=tracker-writeback-3.service
+-- 
+2.17.1
+
