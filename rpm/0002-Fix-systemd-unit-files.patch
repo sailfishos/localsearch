@@ -1,7 +1,7 @@
-From a2194287ff7be2711f8129d5874edc1afd9404a4 Mon Sep 17 00:00:00 2001
+From 2032310bf3bcfe3eb2822dab1a1a22b8fc234add Mon Sep 17 00:00:00 2001
 From: Matti Kosola <matti.kosola@jolla.com>
 Date: Tue, 14 Aug 2018 09:35:50 -0400
-Subject: [PATCH 2/8] Fix systemd unit files
+Subject: [PATCH 2/7] Fix systemd unit files
 
 Signed-off-by: Matti Kosola <matti.kosola@jolla.com>
 ---
