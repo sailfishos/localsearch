@@ -13,6 +13,8 @@ Patch3:     0003-Prevent-tracker-extract-failing-when-seccomp-loading.patch
 Patch4:     0004-Add-also-fileSize-to-the-basic-set-of-file-info-on-a.patch
 Patch5:     0005-Fix-database-corruption-caused-by-the-miner-being-re.patch
 Patch6:     0006-Allow-D-Bus-activation-only-through-systemd.patch
+Patch7:     0007-Update-nfo-fileName-on-content-specific-graphs-too-w.patch
+Patch8:     0008-Update-nfo-fileLastModified-also-on-content-specific.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext

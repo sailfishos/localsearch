@@ -1,0 +1,49 @@
+From 3ca4979071a832aabddfb99b7f3933d6993f35c3 Mon Sep 17 00:00:00 2001
+From: Pekka Vuorela <pekka.vuorela@jolla.com>
+Date: Tue, 21 Sep 2021 19:38:08 +0300
+Subject: [PATCH 8/8] Update nfo:fileLastModified also on content specific
+ graphs
+
+Executing 'touch' on a file was updating only tracker:FileSystem.
+---
+ src/miners/fs/tracker-miner-files.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/src/miners/fs/tracker-miner-files.c b/src/miners/fs/tracker-miner-files.c
+index d1c1dc841..d886650e6 100644
+--- a/src/miners/fs/tracker-miner-files.c
++++ b/src/miners/fs/tracker-miner-files.c
+@@ -2190,9 +2190,10 @@ miner_files_process_file_attributes (TrackerMinerFS      *fs,
+                                      GFileInfo           *info,
+                                      TrackerSparqlBuffer *buffer)
+ {
+-	TrackerResource *resource;
++	TrackerResource *resource, *graph_file;
+ 	time_t time_;
+ 	gchar *uri, *time_str;
++	const gchar *mime_type, *graph;
+ 	GDateTime *modified;
+ 
+ 	uri = g_file_get_uri (file);
+@@ -2210,9 +2211,18 @@ miner_files_process_file_attributes (TrackerMinerFS      *fs,
+ 	if (!modified)
+ 		modified = g_date_time_new_from_unix_utc (0);
+ 
++	mime_type = g_file_info_get_content_type (info);
++	graph = tracker_extract_module_manager_get_graph (mime_type);
++
+ 	/* Update nfo:fileLastModified */
+ 	time_str = g_date_time_format_iso8601 (modified);
+ 	tracker_resource_set_string (resource, "nfo:fileLastModified", time_str);
++	if (graph) {
++		graph_file = tracker_resource_new (uri);
++		tracker_resource_set_string (graph_file, "nfo:fileLastModified", time_str);
++		tracker_sparql_buffer_push (buffer, file, graph, graph_file);
++		g_clear_object (&graph_file);
++	}
+ 	g_date_time_unref (modified);
+ 	g_free (time_str);
+ 
+-- 
+2.31.1
+
