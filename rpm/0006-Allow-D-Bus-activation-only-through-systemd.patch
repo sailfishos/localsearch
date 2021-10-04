@@ -1,7 +1,7 @@
-From d92cd99e6558e867bcb914cdb1559aaf67f9fd34 Mon Sep 17 00:00:00 2001
+From f629b2ef69bf24932bc85cc8314208983a652525 Mon Sep 17 00:00:00 2001
 From: Simo Piiroinen <simo.piiroinen@jolla.com>
 Date: Thu, 12 Aug 2021 08:26:21 +0300
-Subject: [PATCH 6/8] Allow D-Bus activation only through systemd
+Subject: [PATCH 6/7] Allow D-Bus activation only through systemd
 
 Starting D-Bus services should happen only via systemd. Using a dummy
 Exec line in D-Bus configuration ensures that systemd can't be bypassed.

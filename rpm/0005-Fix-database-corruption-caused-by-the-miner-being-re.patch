@@ -1,7 +1,7 @@
-From 2d180086e2859b9a282e1c9338fa73424a498107 Mon Sep 17 00:00:00 2001
+From 8b4374744c566561c0fa4dd45139b79df0667c37 Mon Sep 17 00:00:00 2001
 From: Pekka Vuorela <pekka.vuorela@jolla.com>
 Date: Wed, 7 Jul 2021 13:05:57 +0300
-Subject: [PATCH 5/8] Fix database corruption caused by the miner being
+Subject: [PATCH 5/7] Fix database corruption caused by the miner being
  restarted during setup.
 
 Install the signal handlers before starting database setup so if the
