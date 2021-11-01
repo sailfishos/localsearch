@@ -1,19 +1,17 @@
 Name:       tracker-miners
 Summary:    Tracker miners and metadata extractors
-Version:    3.2.0
+Version:    3.2.1
 Release:    1
 License:    LGPLv2+ and GPLv2+
-URL:        https://wiki.gnome.org/Projects/Tracker
+URL:        https://gnome.pages.gitlab.gnome.org/tracker/
 Source0:    %{name}-%{version}.tar.bz2
 Source1:    10-rtf.rule
 Source2:    10-csv.rule
 Patch1:     0001-Tracker-config-overrides.patch
 Patch2:     0002-Fix-systemd-unit-files.patch
 Patch3:     0003-Prevent-tracker-extract-failing-when-seccomp-loading.patch
-Patch4:     0004-Add-also-fileSize-to-the-basic-set-of-file-info-on-a.patch
-Patch5:     0005-Fix-database-corruption-caused-by-the-miner-being-re.patch
-Patch6:     0006-Allow-D-Bus-activation-only-through-systemd.patch
-Patch7:     0007-Update-nfo-fileLastModified-also-on-content-specific.patch
+Patch4:     0004-Fix-database-corruption-caused-by-the-miner-being-re.patch
+Patch5:     0005-Allow-D-Bus-activation-only-through-systemd.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext

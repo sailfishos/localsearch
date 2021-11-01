@@ -1,7 +1,7 @@
-From aae99517e9159f9eb7980fb1e7e53606c8b8a04f Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Islam Amer <islam.amer@jollamobile.com>
 Date: Wed, 12 Nov 2014 18:10:53 +0200
-Subject: [PATCH 1/7] Tracker config overrides
+Subject: [PATCH] Tracker config overrides
 
 [schema] change default miner initial sleep to 30 seconds to not hammer the system during bootup
 Set the default delay for GraphUpdated to 350 instead of upstream default of 1000. Helps fixing JB#11570
