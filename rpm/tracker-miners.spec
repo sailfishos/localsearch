@@ -7,6 +7,7 @@ URL:        https://gnome.pages.gitlab.gnome.org/tracker/
 Source0:    %{name}-%{version}.tar.bz2
 Source1:    10-rtf.rule
 Source2:    10-csv.rule
+Source3:    tracker-reset.sh
 Patch1:     0001-Tracker-config-overrides.patch
 Patch2:     0002-Fix-systemd-unit-files.patch
 Patch3:     0003-Prevent-tracker-extract-failing-when-seccomp-loading.patch
@@ -46,6 +47,7 @@ BuildRequires:  pkgconfig(libtiff-4) >= 3.8.2
 BuildRequires:  pkgconfig(libpng)
 BuildRequires:  pkgconfig(systemd)
 BuildRequires:  giflib-devel
+BuildRequires:  oneshot
 
 Requires:   systemd-user-session-targets
 Requires(post):   /sbin/ldconfig
@@ -93,11 +95,14 @@ ln -s ../tracker-miner-fs-3.service %{buildroot}%{_userunitdir}/post-user-sessio
 cp -a %{SOURCE1} %{buildroot}%{_datadir}/tracker3-miners/extract-rules/
 cp -a %{SOURCE2} %{buildroot}%{_datadir}/tracker3-miners/extract-rules/
 
+install -D -m 755 %{SOURCE3} %{buildroot}/%{_oneshotdir}/tracker-reset.sh
+
 %find_lang tracker3-miners
 
 %post
 /sbin/ldconfig
 glib-compile-schemas   /usr/share/glib-2.0/schemas/
+add-oneshot --now --new-users --all-users tracker-reset.sh || :
 if [ "$1" -ge 1 ]; then
 systemctl-user daemon-reload || :
 systemctl-user stop tracker-extract-3.service || :
@@ -128,3 +133,4 @@ fi
 %{_datadir}/tracker3-miners/
 %{_userunitdir}/tracker-*.service
 %{_userunitdir}/post-user-session.target.wants/tracker-miner-fs-3.service
+%attr(0755, -, -) %{_oneshotdir}/tracker-reset.sh
