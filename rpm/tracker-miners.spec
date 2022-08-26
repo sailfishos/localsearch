@@ -1,6 +1,6 @@
 Name:       tracker-miners
 Summary:    Tracker miners and metadata extractors
-Version:    3.2.1
+Version:    3.3.1
 Release:    1
 License:    LGPLv2+ and GPLv2+
 URL:        https://gnome.pages.gitlab.gnome.org/tracker/
@@ -19,6 +19,7 @@ BuildRequires:  gettext
 BuildRequires:  intltool
 BuildRequires:  oneshot
 BuildRequires:  pkgconfig(tracker-sparql-3.0)
+BuildRequires:  pkgconfig(blkid)
 BuildRequires:  pkgconfig(dbus-glib-1) >= 0.60
 BuildRequires:  pkgconfig(exempi-2.0) >= 2.1.0
 BuildRequires:  pkgconfig(glib-2.0) >= 2.40.0

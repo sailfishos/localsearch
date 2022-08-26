@@ -16,7 +16,7 @@ Signed-off-by: Simo Piiroinen <simo.piiroinen@jolla.com>
  5 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/src/miners/fs/org.freedesktop.Tracker3.Miner.Files.service.in b/src/miners/fs/org.freedesktop.Tracker3.Miner.Files.service.in
-index cc35460dd..9db5967f4 100644
+index cc35460dde39e39023c89dd9895a47452a75fbd0..9db5967f4e5d9d300399b8f2d0773239bbff3bdc 100644
 --- a/src/miners/fs/org.freedesktop.Tracker3.Miner.Files.service.in
 +++ b/src/miners/fs/org.freedesktop.Tracker3.Miner.Files.service.in
 @@ -1,6 +1,6 @@
@@ -28,7 +28,7 @@ index cc35460dd..9db5967f4 100644
  
  # Miner details needed for tracker-control
 diff --git a/src/miners/rss/org.freedesktop.Tracker3.Miner.RSS.service.in b/src/miners/rss/org.freedesktop.Tracker3.Miner.RSS.service.in
-index 359db6ecc..566801627 100644
+index 359db6eccb55433d5125f913a5d510d359e21b15..5668016279c1d09e1641e487852021b605d28bc1 100644
 --- a/src/miners/rss/org.freedesktop.Tracker3.Miner.RSS.service.in
 +++ b/src/miners/rss/org.freedesktop.Tracker3.Miner.RSS.service.in
 @@ -1,6 +1,6 @@
@@ -40,7 +40,7 @@ index 359db6ecc..566801627 100644
  
  # Miner details needed for tracker-control
 diff --git a/src/tracker-control/org.freedesktop.Tracker3.Miner.Files.Control.service.in b/src/tracker-control/org.freedesktop.Tracker3.Miner.Files.Control.service.in
-index 261a2f5bb..fde240041 100644
+index 261a2f5bbb3d440f8c15ba54e521a4f5f0988c36..fde240041bbf6a0602afcfdf33a6d7ab9bcceae7 100644
 --- a/src/tracker-control/org.freedesktop.Tracker3.Miner.Files.Control.service.in
 +++ b/src/tracker-control/org.freedesktop.Tracker3.Miner.Files.Control.service.in
 @@ -1,4 +1,4 @@
@@ -50,7 +50,7 @@ index 261a2f5bb..fde240041 100644
 +Exec=/bin/false
  @SYSTEMD_SERVICE@
 diff --git a/src/tracker-extract/org.freedesktop.Tracker3.Miner.Extract.service.in b/src/tracker-extract/org.freedesktop.Tracker3.Miner.Extract.service.in
-index cd396057a..d56f103cc 100644
+index cd396057a973da2b55e9757d2a38ba3eadb47e11..d56f103cc3542b46450c7bec6e5ce0939a64815e 100644
 --- a/src/tracker-extract/org.freedesktop.Tracker3.Miner.Extract.service.in
 +++ b/src/tracker-extract/org.freedesktop.Tracker3.Miner.Extract.service.in
 @@ -1,6 +1,6 @@
@@ -62,7 +62,7 @@ index cd396057a..d56f103cc 100644
  
  # Miner details needed for tracker-control
 diff --git a/src/tracker-writeback/org.freedesktop.Tracker3.Writeback.service.in b/src/tracker-writeback/org.freedesktop.Tracker3.Writeback.service.in
-index 484fa2f81..8bc3425c4 100644
+index 484fa2f8127e9eabdd39b45981356331361d992d..8bc3425c4ea13cad969470188b7a1bc8035ded50 100644
 --- a/src/tracker-writeback/org.freedesktop.Tracker3.Writeback.service.in
 +++ b/src/tracker-writeback/org.freedesktop.Tracker3.Writeback.service.in
 @@ -1,4 +1,4 @@
@@ -71,6 +71,3 @@ index 484fa2f81..8bc3425c4 100644
 -Exec=@libexecdir@/tracker-writeback-3
 +Exec=/bin/false
  SystemdService=tracker-writeback-3.service
--- 
-2.31.1
-
