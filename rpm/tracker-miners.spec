@@ -1,6 +1,6 @@
 Name:       tracker-miners
 Summary:    Tracker miners and metadata extractors
-Version:    3.2.1
+Version:    3.3.1
 Release:    1
 License:    LGPLv2+ and GPLv2+
 URL:        https://gnome.pages.gitlab.gnome.org/tracker/
@@ -13,12 +13,15 @@ Patch2:     0002-Fix-systemd-unit-files.patch
 Patch3:     0003-Prevent-tracker-extract-failing-when-seccomp-loading.patch
 Patch4:     0004-Fix-database-corruption-caused-by-the-miner-being-re.patch
 Patch5:     0005-Allow-D-Bus-activation-only-through-systemd.patch
+Patch6:     0006-backport-Avoid-non-existing-nfo-language-on-libav-ex.patch
+Patch7:     0007-tracker-extract-libav-Check-for-all-tags-also-from-s.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext
 BuildRequires:  intltool
 BuildRequires:  oneshot
 BuildRequires:  pkgconfig(tracker-sparql-3.0)
+BuildRequires:  pkgconfig(blkid)
 BuildRequires:  pkgconfig(dbus-glib-1) >= 0.60
 BuildRequires:  pkgconfig(exempi-2.0) >= 2.1.0
 BuildRequires:  pkgconfig(glib-2.0) >= 2.40.0

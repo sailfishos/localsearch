@@ -12,7 +12,7 @@ event loop is started and the queued signal handler is processed.
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/miners/fs/tracker-main.c b/src/miners/fs/tracker-main.c
-index 52cb4ed7c..493d2220a 100644
+index 52cb4ed7c14eb4db5bff3b70db8a577f39e7022f..493d2220a91fddad1ae4f8802c0ab22b42852c9a 100644
 --- a/src/miners/fs/tracker-main.c
 +++ b/src/miners/fs/tracker-main.c
 @@ -1033,6 +1033,8 @@ main (gint argc, gchar *argv[])
@@ -33,6 +33,3 @@ index 52cb4ed7c..493d2220a 100644
  	/* Go, go, go! */
  	g_main_loop_run (main_loop);
  
--- 
-2.31.1
-

@@ -16,7 +16,7 @@ Harmonize ignore folders
  1 file changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/data/org.freedesktop.Tracker.Miner.Files.gschema.xml b/data/org.freedesktop.Tracker.Miner.Files.gschema.xml
-index dd4a106a6..c53c245a5 100644
+index dd4a106a6c03a3714e5f1293460624129ff1aad7..c53c245a571c7b54e9d342a4f69694c79857b6ba 100644
 --- a/data/org.freedesktop.Tracker.Miner.Files.gschema.xml
 +++ b/data/org.freedesktop.Tracker.Miner.Files.gschema.xml
 @@ -23,14 +23,14 @@ Boston, MA  02110-1301, USA.
@@ -80,6 +80,3 @@ index dd4a106a6..c53c245a5 100644
      </key>
    </schema>
  </schemalist>
--- 
-2.31.1
-
