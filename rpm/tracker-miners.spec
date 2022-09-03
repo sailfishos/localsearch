@@ -14,7 +14,8 @@ Patch3:     0003-Prevent-tracker-extract-failing-when-seccomp-loading.patch
 Patch4:     0004-Fix-database-corruption-caused-by-the-miner-being-re.patch
 Patch5:     0005-Allow-D-Bus-activation-only-through-systemd.patch
 Patch6:     0006-backport-Avoid-non-existing-nfo-language-on-libav-ex.patch
-Patch7:     0007-tracker-extract-libav-Check-for-all-tags-also-from-s.patch
+Patch7:     0007-backport-tracker-extract-libav-Check-for-all-tags-al.patch
+Patch8:     0008-backport-tracker-extract-libav-Add-missing-include.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext
