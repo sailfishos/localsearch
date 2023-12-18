@@ -19,7 +19,6 @@ Patch8:     0008-backport-tracker-extract-libav-Add-missing-include.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext
-BuildRequires:  intltool
 BuildRequires:  oneshot
 BuildRequires:  pkgconfig(tracker-sparql-3.0)
 BuildRequires:  pkgconfig(blkid)
