@@ -5,14 +5,14 @@ Subject: [PATCH] Prevent tracker-extract failing when seccomp loading fails on
  older kernels. JB#50862
 
 ---
- src/libtracker-miners-common/tracker-seccomp.c | 9 +++++++--
+ src/common/tracker-seccomp.c | 9 +++++++--
  1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/src/libtracker-miners-common/tracker-seccomp.c b/src/libtracker-miners-common/tracker-seccomp.c
-index 374800ddd55f7e84046270169dcae33815b25d5d..334daab0787510a6179cb47f3914dc2833244f66 100644
---- a/src/libtracker-miners-common/tracker-seccomp.c
-+++ b/src/libtracker-miners-common/tracker-seccomp.c
-@@ -302,11 +302,16 @@ tracker_seccomp_init (void)
+diff --git a/src/common/tracker-seccomp.c b/src/common/tracker-seccomp.c
+index a1764aea3..af8625c15 100644
+--- a/src/common/tracker-seccomp.c
++++ b/src/common/tracker-seccomp.c
+@@ -324,11 +324,16 @@ tracker_seccomp_init (void)
  #endif
  
  	g_debug ("Loading seccomp rules.");
