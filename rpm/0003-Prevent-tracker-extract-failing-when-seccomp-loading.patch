@@ -9,10 +9,10 @@ Subject: [PATCH] Prevent tracker-extract failing when seccomp loading fails on
  1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/src/libtracker-miners-common/tracker-seccomp.c b/src/libtracker-miners-common/tracker-seccomp.c
-index 88fbbe197e36c4a21d59adf9e6eaffda5e6f7c64..b4016b69b1522d27a7ea2b7ecf87400fe9c50099 100644
+index 374800ddd55f7e84046270169dcae33815b25d5d..334daab0787510a6179cb47f3914dc2833244f66 100644
 --- a/src/libtracker-miners-common/tracker-seccomp.c
 +++ b/src/libtracker-miners-common/tracker-seccomp.c
-@@ -274,11 +274,16 @@ tracker_seccomp_init (void)
+@@ -302,11 +302,16 @@ tracker_seccomp_init (void)
  #endif
  
  	g_debug ("Loading seccomp rules.");
