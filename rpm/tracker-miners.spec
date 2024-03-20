@@ -1,6 +1,6 @@
 Name:       tracker-miners
 Summary:    Tracker miners and metadata extractors
-Version:    3.3.1
+Version:    3.3.3
 Release:    1
 License:    LGPLv2+ and GPLv2+
 URL:        https://gnome.pages.gitlab.gnome.org/tracker/
@@ -16,6 +16,8 @@ Patch5:     0005-Allow-D-Bus-activation-only-through-systemd.patch
 Patch6:     0006-backport-Avoid-non-existing-nfo-language-on-libav-ex.patch
 Patch7:     0007-backport-tracker-extract-libav-Check-for-all-tags-al.patch
 Patch8:     0008-backport-tracker-extract-libav-Add-missing-include.patch
+Patch9:     0009-backport-tracker-miner-fs-Allow-building-without-gst.patch
+Patch10:    0010-backport-seccomp-Allow-epoll_create1.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext
