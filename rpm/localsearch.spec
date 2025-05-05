@@ -1,9 +1,9 @@
-Name:       tracker-miners
+Name:       localsearch
 Summary:    Tracker miners and metadata extractors
 Version:    3.9.0
 Release:    1
 License:    LGPLv2+ and GPLv2+
-URL:        https://gnome.pages.gitlab.gnome.org/tracker/
+URL:        https://gnome.pages.gitlab.gnome.org/localsearch/
 Source0:    %{name}-%{version}.tar.bz2
 Source1:    10-rtf.rule
 Source2:    10-csv.rule
@@ -15,7 +15,7 @@ Patch5:     0005-Allow-D-Bus-activation-only-through-systemd.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext
-BuildRequires:  pkgconfig(tracker-sparql-3.0)
+BuildRequires:  pkgconfig(tinysparql-3.0)
 BuildRequires:  pkgconfig(blkid)
 BuildRequires:  pkgconfig(dbus-glib-1) >= 0.60
 BuildRequires:  pkgconfig(exempi-2.0) >= 2.1.0
@@ -52,21 +52,14 @@ Requires:   systemd-user-session-targets
 Requires(post):   /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 
+Obsoletes:      tracker-miners < 3.8
+Provides:       tracker-miners = %{version}-%{release}
+
 %description
-Tracker is a powerful desktop-neutral first class object database,
+Tinysparql is a powerful desktop-neutral first class object database,
 tag/metadata database and search tool.
 
-It consists of a common object database that allows entities to have an
-almost infinite number of properties, metadata (both embedded/harvested as
-well as user definable), a comprehensive database of keywords/tags and
-links to other entities.
-
-It provides additional features for file based objects including context
-linking and audit trails for a file object.
-
-This package contains various miners and metadata extractors for tracker.
-It has the ability to index, store, harvest metadata. retrieve and search
-all types of files and other first class objects.
+This package contains various miners and metadata extractors for tinysparql.
 
 %prep
 %autosetup -p1 -n %{name}-%{version}/upstream
