@@ -5,24 +5,25 @@ Subject: [PATCH] Fix systemd unit files
 
 Signed-off-by: Matti Kosola <matti.kosola@jolla.com>
 ---
- src/miners/fs/tracker-miner-fs.service.in | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ src/indexer/tracker-miner-fs.service.in | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/src/miners/fs/tracker-miner-fs.service.in b/src/miners/fs/tracker-miner-fs.service.in
-index 373a7c0eabcaa6e3ff7ae550bd3d382f99a40595..590248f853de069d711d3d7eff45f668e676d011 100644
---- a/src/miners/fs/tracker-miner-fs.service.in
-+++ b/src/miners/fs/tracker-miner-fs.service.in
-@@ -1,16 +1,15 @@
+diff --git a/src/indexer/tracker-miner-fs.service.in b/src/indexer/tracker-miner-fs.service.in
+index e5f6da7ce..8bbbadd9d 100644
+--- a/src/indexer/tracker-miner-fs.service.in
++++ b/src/indexer/tracker-miner-fs.service.in
+@@ -1,17 +1,15 @@
  [Unit]
  Description=Tracker file system data miner
  ConditionUser=!root
+-ConditionUser=!gnome-initial-setup
 -After=gnome-session.target
 +After=user-session.target
  
  [Service]
  Type=dbus
- BusName=org.freedesktop.Tracker3.Miner.Files
- ExecStart=@libexecdir@/tracker-miner-fs-3
+ BusName=org.freedesktop.LocalSearch3
+ ExecStart=@libexecdir@/localsearch-3
 -Restart=on-failure
 -# Don't restart after tracker daemon -k (aka tracker-control -k)
 -RestartPreventExitStatus=SIGKILL
