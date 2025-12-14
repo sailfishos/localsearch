@@ -1,6 +1,6 @@
 Name:       localsearch
 Summary:    Tracker miners and metadata extractors
-Version:    3.9.0
+Version:    3.10.2
 Release:    1
 License:    LGPLv2+ and GPLv2+
 URL:        https://gnome.pages.gitlab.gnome.org/localsearch/
