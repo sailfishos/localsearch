@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matti Viljanen <matti.viljanen@jolla.com>
+Date: Mon, 5 Jan 2026 17:37:24 +0200
+Subject: [PATCH] Handle paths starting with an environmental variable
+
+envvar_to_path accepts only a plain variable, e.g. "$HOME" without any
+path components after it. This breaks our use of android_storage paths
+given in default config in spec file. Instead use
+tracker_path_evaluate_name function which correctly handles
+environmental variables, and other things too. This is safe to do since
+envvar_to_path is only used in printing the paths to the user, and the
+paths are parsed correctly elsewhere, i.e. localsearch can list files
+under android_storage already, as expected.
+---
+ src/cli/tracker-index.c | 15 ++-------------
+ 1 file changed, 2 insertions(+), 13 deletions(-)
+
+diff --git a/src/cli/tracker-index.c b/src/cli/tracker-index.c
+index 1fe1c2ca4..90b694f04 100644
+--- a/src/cli/tracker-index.c
++++ b/src/cli/tracker-index.c
+@@ -37,6 +37,7 @@
+ 
+ #include "tracker-color.h"
+ #include "tracker-dbus.h"
++#include "tracker-file-utils.h"
+ 
+ static gboolean opt_add;
+ static gboolean opt_remove;
+@@ -103,18 +104,6 @@ path_to_alias (const gchar *path)
+ 	return NULL;
+ }
+ 
+-static const gchar *
+-envvar_to_path (const gchar *envvar)
+-{
+-	const gchar *path;
+-
+-	path = g_getenv (&envvar[1]);
+-	if (g_file_test (path, G_FILE_TEST_EXISTS))
+-		return path;
+-
+-	return NULL;
+-}
+-
+ static GStrv
+ strv_add (GStrv        strv,
+           const gchar *elem)
+@@ -319,7 +308,7 @@ print_list (GStrv    list,
+ 		if (list[i][0] == '&')
+ 			path = alias_to_path (list[i]);
+ 		else if (list[i][0] == '$')
+-			path = envvar_to_path (list[i]);
++			path = tracker_path_evaluate_name (list[i]);
+ 		else if (list[i][0] == '/')
+ 			path = list[i];
+ 		else
