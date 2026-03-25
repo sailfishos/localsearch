@@ -47,7 +47,7 @@ BuildRequires:  pkgconfig(libseccomp) >= 2.0
 BuildRequires:  pkgconfig(libjpeg)
 BuildRequires:  pkgconfig(libtiff-4) >= 3.8.2
 BuildRequires:  pkgconfig(libpng)
-BuildRequires:  pkgconfig(systemd)
+BuildRequires:  systemd-rpm-macros
 BuildRequires:  giflib-devel
 BuildRequires:  oneshot
 
