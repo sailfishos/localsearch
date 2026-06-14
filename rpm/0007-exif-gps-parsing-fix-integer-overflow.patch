@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Luk=C3=A1=C5=A1=20Karas?= <lukas.karas@centrum.cz>
+Date: Sun, 14 Jun 2026 23:39:16 +0200
+Subject: [PATCH] exif gps parsing: fix integer overflow
+
+With hight-precision denominator (10000000), computation
+of seconds in gps coordinates leads to integer overflow.
+This is the minimal fix, upstream fixes this bug
+in 8c6e8b139 with bigger refactoring related to gexiv2
+migration.
+---
+ src/extractor/utils/tracker-exif.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/extractor/utils/tracker-exif.c b/src/extractor/utils/tracker-exif.c
+index 995456856..2b4cb3e5a 100644
+--- a/src/extractor/utils/tracker-exif.c
++++ b/src/extractor/utils/tracker-exif.c
+@@ -328,8 +328,8 @@ get_gps_coordinate (ExifData *exif,
+ 			}
+ 
+ 			f = (gdouble) degrees.numerator / degrees.denominator +
+-				(gdouble) minutes.numerator / (minutes.denominator * 60) +
+-				(gdouble) seconds.numerator / (seconds.denominator * 60 * 60);
++				(gdouble) minutes.numerator / ((gdouble)minutes.denominator * 60.0) +
++				(gdouble) seconds.numerator / ((gdouble)seconds.denominator * 60.0 * 60.0);
+ 
+ 			if (refentry->format != EXIF_FORMAT_ASCII || refentry->size < 2) {
+ 				g_debug ("Invalid format/size for GPS ref entry");
+-- 
+2.51.0
+

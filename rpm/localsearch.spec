@@ -14,6 +14,7 @@ Patch3:     0003-Prevent-tracker-extract-failing-when-seccomp-loading.patch
 Patch4:     0004-Fix-database-corruption-caused-by-the-miner-being-re.patch
 Patch5:     0005-Allow-D-Bus-activation-only-through-systemd.patch
 Patch6:     0006-Handle-paths-starting-with-an-environmental-variable.patch
+Patch7:     0007-exif-gps-parsing-fix-integer-overflow.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext
