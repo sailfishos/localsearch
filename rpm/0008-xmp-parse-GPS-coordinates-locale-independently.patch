@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Luk=C3=A1=C5=A1=20Karas?= <lukas.karas@centrum.cz>
+Date: Mon, 15 Jun 2026 07:43:33 +0200
+Subject: [PATCH] xmp: parse GPS coordinates locale-independently
+
+gps_coordinate_dup() used atof(), which is locale-dependent and parses
+the '.'-formatted minutes as 0 in decimal-comma locales (e.g. cs_CZ),
+corrupting the coordinate. Use g_ascii_strtod() instead.
+---
+ src/extractor/utils/tracker-xmp.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/src/extractor/utils/tracker-xmp.c b/src/extractor/utils/tracker-xmp.c
+index 37945a9c9..2e9d0ffbc 100644
+--- a/src/extractor/utils/tracker-xmp.c
++++ b/src/extractor/utils/tracker-xmp.c
+@@ -142,8 +142,14 @@ gps_coordinate_dup (const gchar *coordinates)
+ 		min = g_match_info_fetch (info, 2);
+ 		ref = g_match_info_fetch (info, 3);
+ 
+-		d = atof (deg);
+-		m = atof (min);
++		/* Use g_ascii_strtod() instead of atof(): the coordinate
++		 * components always use '.' as decimal separator, but atof()
++		 * is locale-dependent and would parse e.g. "0.956" as 0 in
++		 * locales using a decimal comma, silently dropping the
++		 * fractional minutes.
++		 */
++		d = g_ascii_strtod (deg, NULL);
++		m = g_ascii_strtod (min, NULL);
+ 
+ 		r = d + m/60;
+ 
+-- 
+2.51.0
+
