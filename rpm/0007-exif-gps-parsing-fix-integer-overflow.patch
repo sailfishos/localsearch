@@ -27,6 +27,3 @@ index 995456856..2b4cb3e5a 100644
  
  			if (refentry->format != EXIF_FORMAT_ASCII || refentry->size < 2) {
  				g_debug ("Invalid format/size for GPS ref entry");
--- 
-2.51.0
-

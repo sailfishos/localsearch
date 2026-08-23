@@ -11,10 +11,10 @@ corrupting the coordinate. Use g_ascii_strtod() instead.
  1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/src/extractor/utils/tracker-xmp.c b/src/extractor/utils/tracker-xmp.c
-index 37945a9c9..2e9d0ffbc 100644
+index 5a3b2f9b6..3228e7269 100644
 --- a/src/extractor/utils/tracker-xmp.c
 +++ b/src/extractor/utils/tracker-xmp.c
-@@ -142,8 +142,14 @@ gps_coordinate_dup (const gchar *coordinates)
+@@ -144,8 +144,14 @@ gps_coordinate_dup (const gchar *coordinates)
  		min = g_match_info_fetch (info, 2);
  		ref = g_match_info_fetch (info, 3);
  
@@ -31,6 +31,3 @@ index 37945a9c9..2e9d0ffbc 100644
  
  		r = d + m/60;
  
--- 
-2.51.0
-

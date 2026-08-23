@@ -1,0 +1,497 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Enni=20H=C3=A4m=C3=A4l=C3=A4inen?=
+ <enni.hamalainen@seafarix.com>
+Date: Sun, 23 Aug 2026 17:06:55 +0300
+Subject: [PATCH] Add extractor for sid
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Enni Hämäläinen <enni.hamalainen@seafarix.com>
+---
+ meson.build                           |   3 +-
+ src/extractor/10-sid.rule             |   6 +
+ src/extractor/meson.build             |   3 +-
+ src/extractor/tracker-extract-sid.cpp | 428 ++++++++++++++++++++++++++
+ 4 files changed, 438 insertions(+), 2 deletions(-)
+ create mode 100644 src/extractor/10-sid.rule
+ create mode 100644 src/extractor/tracker-extract-sid.cpp
+
+diff --git a/meson.build b/meson.build
+index d1685474f..15f7d275e 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1,4 +1,4 @@
+-project('localsearch', 'c',
++project('localsearch', 'c', 'cpp',
+         version: '3.9.0',
+         meson_version: '>=0.51')
+ 
+@@ -47,6 +47,7 @@ totem_plparser = dependency('totem-plparser', required: get_option('playlist'))
+ 
+ libgif = cc.find_library('gif', required: get_option('gif'))
+ libmath = cc.find_library('m', required: false)
++libsidplayfp = dependency('libsidplayfp', version: '>= 2.0.0')
+ 
+ have_tracker_extract = get_option('extract')
+ have_tracker_miner_fs = get_option('miner_fs')
+diff --git a/src/extractor/10-sid.rule b/src/extractor/10-sid.rule
+new file mode 100644
+index 000000000..5bf3babb9
+--- /dev/null
++++ b/src/extractor/10-sid.rule
+@@ -0,0 +1,6 @@
++[ExtractorRule]
++ModulePath=libextract-sid.so
++MimeTypes=audio/prs.sid;audio/x-psid;audio/x-sid;
++FallbackRdfTypes=nmm:MusicPiece;nfo:Audio;
++Graph=tracker:Audio
++Hash=@hash@
+diff --git a/src/extractor/meson.build b/src/extractor/meson.build
+index d5472ec5c..7055df812 100644
+--- a/src/extractor/meson.build
++++ b/src/extractor/meson.build
+@@ -13,7 +13,8 @@ uninstalled_tracker_extract_path = join_paths(meson.current_build_dir(), 'locals
+ modules = [
+   ['extract-bmp', 'tracker-extract-bmp.c', ['10-bmp.rule'], [tracker_miners_common_dep]],
+   ['extract-desktop', 'tracker-extract-desktop.c', ['10-desktop.rule'], [tracker_miners_common_dep]],
+-  ['extract-dummy', [], ['10-comics.rule', '10-ebooks.rule', '10-folder.rule', '10-svg.rule', '15-games.rule', '15-executable.rule'], [tracker_miners_common_dep]]
++  ['extract-dummy', [], ['10-comics.rule', '10-ebooks.rule', '10-folder.rule', '10-svg.rule', '15-games.rule', '15-executable.rule'], [tracker_miners_common_dep]],
++  ['extract-sid', 'tracker-extract-sid.cpp', ['10-sid.rule'], [tracker_miners_common_dep, libsidplayfp]]
+ ]
+ 
+ if get_option('abiword')
+diff --git a/src/extractor/tracker-extract-sid.cpp b/src/extractor/tracker-extract-sid.cpp
+new file mode 100644
+index 000000000..1a1e23bf0
+--- /dev/null
++++ b/src/extractor/tracker-extract-sid.cpp
+@@ -0,0 +1,428 @@
++/*
++ * SID (Commodore 64) music extractor.
++ *
++ * Uses libsidplayfp's SidTune/SidTuneInfo C++ API to extract PSID/RSID header
++ * metadata: title, author, released (=> nie:copyright), and any MUS comment
++ * lines.
++ *
++ * SID files carry no inherent duration (playback is open-ended). The
++ * canonical timings live in an external HVSC "Songlengths.md5" database,
++ * indexed by the tune's SidTune::createMD5New() hash. If such a database is
++ * installed at one of the standard system locations we look up the current
++ * file and set nfo:duration accordingly; otherwise duration is simply
++ * omitted.
++ *
++ * References:
++ *   - libsidplayfp SidTuneInfo public header
++ *     (https://sidplay-residfp.sourceforge.net/)
++ *   - HVSC Songlengths format
++ *     (https://www.hvsc.c64.org/)
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ */
++
++#include "config-miners.h"
++
++/* This translation unit is built as C++, so the project-wide
++ * -DG_LOG_DOMAIN="Tracker" (added for language: 'c') doesn't apply here.
++ * Set it manually before <glib.h> so g_debug() lands in the Tracker domain
++ * and is togglable via G_MESSAGES_DEBUG=Tracker. */
++#ifndef G_LOG_DOMAIN
++#define G_LOG_DOMAIN "Tracker"
++#endif
++
++#include <cstdint>
++#include <cstring>
++
++#include <glib.h>
++#include <gio/gio.h>
++
++#include <tracker-common.h>
++
++#include <sidplayfp/SidTune.h>
++#include <sidplayfp/SidTuneInfo.h>
++
++#include "utils/tracker-extract.h"
++
++namespace {
++
++/* Places to look for the HVSC Songlengths.md5 database, in priority order.
++ * The file is small enough (a few MB) that scanning it linearly per SID is
++ * fine; libsidplayfp's own tools use the same file layout. */
++const char * const SID_SONGLENGTHS_PATHS[] = {
++    "/usr/share/sidplayfp/Songlengths.md5",
++    "/usr/share/hvsc/DOCUMENTS/Songlengths.md5",
++    "/usr/share/hvsc/Songlengths.md5",
++    "/usr/local/share/sidplayfp/Songlengths.md5",
++    nullptr,
++};
++
++/* Parse one Songlengths.md5 time token — "MM:SS" or "MM:SS.mmm" — into whole
++ * seconds. Sub-second precision is discarded (floored) since nfo:duration is
++ * integer seconds anyway. */
++gboolean
++parse_time_token (const char *token,
++                  gint64     *out_seconds)
++{
++    const char *colon;
++    char *end = nullptr;
++    gint64 minutes;
++    gint64 seconds;
++
++    colon = strchr (token, ':');
++    if (colon == nullptr || colon == token) {
++        g_debug ("SID: time token '%s' has no ':'", token);
++        return FALSE;
++    }
++
++    minutes = g_ascii_strtoll (token, &end, 10);
++    if (end != colon || minutes < 0) {
++        g_debug ("SID: time token '%s' has bad minutes", token);
++        return FALSE;
++    }
++
++    seconds = g_ascii_strtoll (colon + 1, &end, 10);
++    if (seconds < 0 || seconds >= 60) {
++        g_debug ("SID: time token '%s' has out-of-range seconds", token);
++        return FALSE;
++    }
++
++    /* Trailing junk beyond an optional '.mmm' fractional part means a
++     * malformed token — reject to avoid silently misreading. */
++    if (*end != '\0' && *end != '.') {
++        g_debug ("SID: time token '%s' has trailing garbage '%s'", token, end);
++        return FALSE;
++    }
++
++    *out_seconds = minutes * 60 + seconds;
++    return TRUE;
++}
++
++/* Extract the Nth (1-indexed) time value from a Songlengths.md5 RHS. */
++gboolean
++pick_song_time (const char   *rhs,
++                unsigned int  song_index,
++                gint64       *out_seconds)
++{
++    g_auto (GStrv) tokens = g_strsplit_set (rhs, " \t", -1);
++    unsigned int idx = 0;
++
++    if (song_index == 0) {
++        g_debug ("SID: song index is 0, cannot pick song time");
++        return FALSE;
++    }
++
++    for (int i = 0; tokens[i] != nullptr; i++) {
++        if (*tokens[i] == '\0')
++            continue;
++
++        idx++;
++        if (idx == song_index) {
++            g_debug ("SID: picking song #%u token '%s' from RHS '%s'",
++                     song_index, tokens[i], rhs);
++            return parse_time_token (tokens[i], out_seconds);
++        }
++    }
++
++    g_debug ("SID: song #%u out of range (%u tokens in RHS '%s')",
++             song_index, idx, rhs);
++    return FALSE;
++}
++
++/* Scan one Songlengths.md5 file for md5 and return the song length in
++ * seconds for the given 1-indexed subsong. */
++gboolean
++scan_songlengths_file (const char   *path,
++                       const char   *md5,
++                       unsigned int  song_index,
++                       gint64       *out_seconds)
++{
++    g_autofree gchar *contents = nullptr;
++    g_autoptr (GError) local_error = nullptr;
++    g_auto (GStrv) lines = nullptr;
++    gsize          contents_len = 0;
++    guint          entries_scanned = 0;
++
++    if (!g_file_get_contents (path, &contents, &contents_len, &local_error)) {
++        g_debug ("SID: songlengths db '%s' not readable: %s",
++                 path, local_error->message);
++        return FALSE;
++    }
++
++    g_debug ("SID: opened songlengths db '%s' (%" G_GSIZE_FORMAT " bytes), "
++             "looking for hash '%s'", path, contents_len, md5);
++
++    /* MD5 is stored as 32 lowercase hex chars; input from createMD5New is
++     * already lowercase, but be lenient in case someone hand-edits the DB. */
++    lines = g_strsplit (contents, "\n", -1);
++    for (int i = 0; lines[i] != nullptr; i++) {
++        char *line = lines[i];
++        gsize len = strlen (line);
++
++        if (len > 0 && line[len - 1] == '\r')
++            line[--len] = '\0';
++
++        if (len == 0 || line[0] == ';' || line[0] == '[' || line[0] == '#')
++            continue;
++
++        if (len <= 33 || line[32] != '=')
++            continue;
++
++        entries_scanned++;
++
++        if (g_ascii_strncasecmp (line, md5, 32) != 0)
++            continue;
++
++        g_debug ("SID: matched hash on line %d: '%s'", i + 1, line);
++        return pick_song_time (line + 33, song_index, out_seconds);
++    }
++
++    g_debug ("SID: hash '%s' not found in '%s' (%u entries scanned)",
++             md5, path, entries_scanned);
++    return FALSE;
++}
++
++/* Compute the tune's HVSC-format MD5 and look it up in the first songlengths
++ * database we find on disk. Returns 0 if nothing found — the caller then
++ * simply doesn't set nfo:duration. */
++gint64
++lookup_song_duration_seconds (SidTune      *tune,
++                              unsigned int  song_index)
++{
++    char md5_new_buf[SidTune::MD5_LENGTH + 1];
++    char md5_old_buf[SidTune::MD5_LENGTH + 1];
++    const char *md5_new;
++    const char *md5_old;
++    gint64 seconds = 0;
++
++    /* HVSC since #68 keys Songlengths.md5 by createMD5New(). Older DBs used
++     * createMD5() ("md5 old"). Neither matches the raw file's md5sum — both
++     * are content-based hashes over the tune data. We compute both and try
++     * new-style first, then fall back to old-style if that misses. */
++    md5_new = tune->createMD5New (md5_new_buf);
++    md5_old = tune->createMD5 (md5_old_buf);
++
++    g_debug ("SID: computed hashes new='%s' old='%s' for subsong %u",
++             md5_new ? md5_new : "(null)",
++             md5_old ? md5_old : "(null)",
++             song_index);
++
++    if (md5_new == nullptr && md5_old == nullptr) {
++        g_debug ("SID: could not compute either MD5, giving up on duration");
++        return 0;
++    }
++
++    for (const char * const *p = SID_SONGLENGTHS_PATHS; *p != nullptr; p++) {
++        if (md5_new != nullptr &&
++            scan_songlengths_file (*p, md5_new, song_index, &seconds)) {
++            g_debug ("SID: got %" G_GINT64_FORMAT "s from new-style lookup in '%s'",
++                     seconds, *p);
++            return seconds;
++        }
++        if (md5_old != nullptr &&
++            scan_songlengths_file (*p, md5_old, song_index, &seconds)) {
++            g_debug ("SID: got %" G_GINT64_FORMAT "s from old-style lookup in '%s'",
++                     seconds, *p);
++            return seconds;
++        }
++    }
++
++    g_debug ("SID: no songlengths DB matched — nfo:duration will be omitted");
++    return 0;
++}
++
++/* SID header strings are documented as ISO-8859-1 in the PSID/RSID spec. If a
++ * file happens to already be valid UTF-8 we keep it as-is. */
++gchar *
++sid_string_to_utf8 (const char *src)
++{
++    if (src == nullptr || *src == '\0')
++        return nullptr;
++
++    if (g_utf8_validate (src, -1, nullptr))
++        return g_strdup (src);
++
++    return g_convert (src, -1, "UTF-8", "ISO-8859-1",
++                      nullptr, nullptr, nullptr);
++}
++
++gchar *
++sid_string_dup_stripped (const char *src)
++{
++    gchar *result = sid_string_to_utf8 (src);
++
++    if (result != nullptr) {
++        g_strstrip (result);
++        if (*result == '\0')
++            g_clear_pointer (&result, g_free);
++    }
++
++    return result;
++}
++
++gchar *
++collect_comments (const SidTuneInfo *tune_info)
++{
++    unsigned int n = tune_info->numberOfCommentStrings ();
++
++    if (n == 0)
++        return nullptr;
++
++    g_autoptr (GString) acc = g_string_new (nullptr);
++
++    for (unsigned int i = 0; i < n; i++) {
++        g_autofree gchar *line = sid_string_dup_stripped (tune_info->commentString (i));
++
++        if (line == nullptr)
++            continue;
++
++        if (acc->len > 0)
++            g_string_append_c (acc, '\n');
++        g_string_append (acc, line);
++    }
++
++    if (acc->len == 0)
++        return nullptr;
++
++    return g_strdup (acc->str);
++}
++
++gchar *
++title_from_file (GFile *file)
++{
++    g_autofree gchar *basename = g_file_get_basename (file);
++    gchar *dot;
++
++    if (basename == nullptr)
++        return nullptr;
++
++    dot = strrchr (basename, '.');
++    if (dot != nullptr && dot != basename)
++        *dot = '\0';
++
++    return g_strdelimit (g_steal_pointer (&basename), "_", ' ');
++}
++
++} /* namespace */
++
++/* All SID files are grouped under a single "C64" album so a browsing UI can
++ * present them as one collection regardless of their individual authors. */
++#define SID_ALBUM_TITLE "C64"
++
++extern "C" G_MODULE_EXPORT gboolean
++tracker_extract_get_metadata (TrackerExtractInfo  *info,
++                              GError             **error)
++{
++    g_autoptr (TrackerResource) resource = nullptr;
++    g_autoptr (TrackerResource) artist = nullptr;
++    g_autoptr (TrackerResource) album_disc = nullptr;
++    g_autofree gchar *resource_uri = nullptr;
++    g_autofree gchar *contents = nullptr;
++    g_autofree gchar *title = nullptr;
++    g_autofree gchar *author = nullptr;
++    g_autofree gchar *released = nullptr;
++    g_autofree gchar *comment = nullptr;
++    g_autofree gchar *fallback_title = nullptr;
++    TrackerResource *album;
++    GError *inner_error = nullptr;
++    GFile *file;
++    gsize length = 0;
++
++    file = tracker_extract_info_get_file (info);
++
++    if (!g_file_load_contents (file, nullptr, &contents, &length,
++                               nullptr, &inner_error)) {
++        g_propagate_prefixed_error (error, inner_error,
++                                    "Could not read SID file: ");
++        return FALSE;
++    }
++
++    /* SidTune's memory-buffer constructor takes a uint_least32_t length.
++     * Real SID files are tiny (KBs), but guard against the theoretical
++     * overflow rather than silently truncating. */
++    if (length > G_MAXUINT32) {
++        g_set_error (error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
++                     "SID file too large to parse (%" G_GSIZE_FORMAT " bytes)",
++                     length);
++        return FALSE;
++    }
++
++    SidTune tune (reinterpret_cast<const uint_least8_t *> (contents),
++                  static_cast<uint_least32_t> (length));
++
++    resource_uri = tracker_extract_info_get_content_id (info, nullptr);
++    resource = tracker_resource_new (resource_uri);
++
++    tracker_resource_add_uri (resource, "rdf:type", "nmm:MusicPiece");
++    tracker_resource_add_uri (resource, "rdf:type", "nfo:Audio");
++    tracker_resource_set_string (resource, "nfo:codec", "SID");
++
++    if (tune.getStatus ()) {
++        const SidTuneInfo *tune_info = tune.getInfo ();
++
++        if (tune_info != nullptr) {
++            unsigned int n_info = tune_info->numberOfInfoStrings ();
++            unsigned int start_song = tune_info->startSong ();
++            gint64 duration_seconds;
++
++            g_debug ("SID: parsed OK, songs=%u startSong=%u infoStrings=%u",
++                     tune_info->songs (), start_song, n_info);
++
++            /* PSID/RSID: [0]=Title, [1]=Author, [2]=Released. Missing lines
++             * simply aren't present, so we probe defensively. */
++            if (n_info > 0)
++                title = sid_string_dup_stripped (tune_info->infoString (0));
++            if (n_info > 1)
++                author = sid_string_dup_stripped (tune_info->infoString (1));
++            if (n_info > 2)
++                released = sid_string_dup_stripped (tune_info->infoString (2));
++
++            comment = collect_comments (tune_info);
++
++            duration_seconds = lookup_song_duration_seconds (&tune, start_song);
++            if (duration_seconds > 0)
++                tracker_resource_set_int64 (resource, "nfo:duration", duration_seconds);
++        } else {
++            g_debug ("SID: tune has no info object");
++        }
++    } else {
++        g_debug ("SID: SidTune parse failed: %s", tune.statusString ());
++    }
++
++    if (title != nullptr) {
++        tracker_resource_set_string (resource, "nie:title", title);
++    } else {
++        fallback_title = title_from_file (file);
++        if (fallback_title != nullptr && *fallback_title != '\0')
++            tracker_resource_set_string (resource, "nie:title", fallback_title);
++    }
++
++    if (author != nullptr) {
++        artist = tracker_extract_new_artist (author);
++        tracker_resource_set_relation (resource, "nmm:artist", artist);
++    }
++
++    if (released != nullptr)
++        tracker_resource_set_string (resource, "nie:copyright", released);
++
++    if (comment != nullptr)
++        tracker_resource_set_string (resource, "nie:comment", comment);
++
++    /* Group all SID tunes under a shared "C64" album. The helper URIs both
++     * the disc and album by title, so every SID file merges into the same
++     * nmm:MusicAlbum resource. */
++    album_disc = tracker_extract_new_music_album_disc (SID_ALBUM_TITLE,
++                                                       nullptr, 1, nullptr);
++    tracker_resource_set_relation (resource, "nmm:musicAlbumDisc", album_disc);
++
++    album = tracker_resource_get_first_relation (album_disc, "nmm:albumDiscAlbum");
++    if (album != nullptr)
++        tracker_resource_set_relation (resource, "nmm:musicAlbum", album);
++
++    tracker_extract_info_set_resource (info, resource);
++
++    return TRUE;
++}
