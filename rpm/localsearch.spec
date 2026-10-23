@@ -16,6 +16,7 @@ Patch5:     0005-Allow-D-Bus-activation-only-through-systemd.patch
 Patch6:     0006-Handle-paths-starting-with-an-environmental-variable.patch
 Patch7:     0007-exif-gps-parsing-fix-integer-overflow.patch
 Patch8:     0008-xmp-parse-GPS-coordinates-locale-independently.patch
+Patch9:     0009-Add-extractor-for-sid.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext
@@ -50,6 +51,7 @@ BuildRequires:  pkgconfig(libjpeg)
 BuildRequires:  pkgconfig(libtiff-4) >= 3.8.2
 BuildRequires:  pkgconfig(libpng)
 BuildRequires:  pkgconfig(systemd)
+BuildRequires:  pkgconfig(libsidplayfp)
 BuildRequires:  giflib-devel
 BuildRequires:  oneshot
 
