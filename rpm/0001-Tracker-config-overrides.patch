@@ -68,7 +68,7 @@ index 044173002..f5666b0c8 100644
        <summary>Ignored directories</summary>
        <description>List of directories to avoid</description>
 -      <default>[ 'po', 'CVS', 'core-dumps', 'lost+found' ]</default>
-+      <default>[ 'po', 'CVS', 'core-dumps', 'lost+found', '$HOME/android_storage/Android' ]</default>
++      <default>[ 'po', 'CVS', 'core-dumps', 'lost+found', '$HOME/android_storage/Android', '__MACOSX' ]</default>
      </key>
  
      <key name="ignored-directories-with-content" type="as">
