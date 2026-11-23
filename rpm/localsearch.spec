@@ -17,6 +17,7 @@ Patch6:     0006-Handle-paths-starting-with-an-environmental-variable.patch
 Patch7:     0007-exif-gps-parsing-fix-integer-overflow.patch
 Patch8:     0008-xmp-parse-GPS-coordinates-locale-independently.patch
 Patch9:     0009-Add-extractor-for-sid.patch
+Patch10:    0010-Rebuild-an-unusable-filesystem-index-on-startup.patch
 
 BuildRequires:  meson >= 0.50
 BuildRequires:  gettext
