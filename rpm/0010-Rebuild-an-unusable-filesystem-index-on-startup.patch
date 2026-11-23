@@ -1,0 +1,234 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Andrew Branson <andrew.branson@jolla.com>
+Date: Mon, 23 Nov 2026 10:26:36 +0100
+Subject: [PATCH] Rebuild an unusable filesystem index on startup
+
+An incomplete database can have a zero schema version. TinySPARQL
+reports this as an open failure, so checking only for corruption leaves
+the miner unable to start. Discard the existing index on an open failure
+and retry once as a fresh crawl.
+
+Serialize access to the cache and mark an in-progress reset so another
+miner or an interrupted deletion cannot leave a partial index in use.
+---
+ src/indexer/tracker-main.c | 171 +++++++++++++++++++++++++++----------
+ 1 file changed, 126 insertions(+), 45 deletions(-)
+
+diff --git a/src/indexer/tracker-main.c b/src/indexer/tracker-main.c
+index 5a3f471..d09dd58 100644
+--- a/src/indexer/tracker-main.c
++++ b/src/indexer/tracker-main.c
+@@ -23,6 +23,11 @@
+ #include <stdlib.h>
+ #include <locale.h>
+ #include <errno.h>
++#include <fcntl.h>
++#include <ftw.h>
++#include <stdio.h>
++#include <sys/file.h>
++#include <glib/gstdio.h>
+ #include <sys/types.h>
+ #include <sys/resource.h>
+ #include <unistd.h>
+@@ -734,52 +739,123 @@ finish_endpoint_thread (void)
+ 	g_clear_pointer (&endpoint_thread_data, g_free);
+ }
+ 
++/* Keep the lock outside the replaceable store and hold it while the miner
++ * owns the database, including during startup before it acquires its bus name.
++ */
++static gint
++lock_cache (GFile   *cache,
++            GError **error)
++{
++	g_autofree gchar *path = g_file_get_path (cache);
++	gint fd, saved_errno;
++
++	if (!path) {
++		g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED,
++		                     "Index cache must be local");
++		return -1;
++	}
++
++	if (g_mkdir_with_parents (path, 0700) < 0)
++		goto fail;
++	fd = open (path, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
++	if (fd < 0)
++		goto fail;
++	if (flock (fd, LOCK_EX | LOCK_NB) == 0)
++		return fd;
++
++	saved_errno = errno;
++	close (fd);
++	errno = saved_errno;
++fail:
++	g_set_error (error, G_IO_ERROR, g_io_error_from_errno (errno),
++	             "Could not lock index cache '%s': %s", path, g_strerror (errno));
++	return -1;
++}
++
++static int
++remove_cache_entry (const char        *path,
++                    const struct stat *st,
++                    int                type,
++                    struct FTW        *ftw)
++{
++	return g_remove (path) == 0 || errno == ENOENT ? 0 : -1;
++}
++
++static gboolean
++discard_store (const gchar  *path,
++               const gchar  *marker,
++               GError      **error)
++{
++	/* A surviving marker makes the next startup finish an interrupted reset. */
++	if (nftw (path, remove_cache_entry, 16, FTW_DEPTH | FTW_PHYS | FTW_MOUNT) < 0 &&
++	    errno != ENOENT) {
++		g_set_error (error, G_IO_ERROR, g_io_error_from_errno (errno),
++		             "Could not discard index '%s': %s", path, g_strerror (errno));
++		return FALSE;
++	}
++
++	if (g_unlink (marker) < 0) {
++		g_set_error (error, G_IO_ERROR, g_io_error_from_errno (errno),
++		             "Could not clear index reset marker '%s': %s", marker, g_strerror (errno));
++		return FALSE;
++	}
++
++	return TRUE;
++}
++
++static TrackerSparqlConnection *
++open_store (GFile        *store,
++            GFile        *ontology,
++            const gchar  *path,
++            GError      **error)
++{
++	if (path && g_mkdir_with_parents (path, 0700) < 0) {
++		g_set_error (error, G_IO_ERROR, g_io_error_from_errno (errno),
++		             "Could not create index directory '%s': %s", path, g_strerror (errno));
++		return NULL;
++	}
++
++	return tracker_sparql_connection_new (get_fts_connection_flags (), store, ontology, NULL, error);
++}
++
+ static TrackerSparqlConnection *
+ setup_connection (TrackerDomainOntology  *domain,
++                  gboolean               *initial_index,
+                   GError                **error)
+ {
+-	TrackerSparqlConnection *sparql_conn;
+-	g_autoptr (GFile) store = NULL, ontology = NULL;
+-	GError *internal_error = NULL;
+-
+-	if (!dry_run)
+-		store = get_cache_dir (domain);
+-	ontology = tracker_sparql_get_ontology_nepomuk ();
+-
+-	sparql_conn = tracker_sparql_connection_new (get_fts_connection_flags (),
+-	                                             store,
+-	                                             ontology,
+-	                                             NULL,
+-	                                             &internal_error);
+-
+-	if (store && g_error_matches (internal_error, TRACKER_SPARQL_ERROR, TRACKER_SPARQL_ERROR_CORRUPT)) {
+-		g_autoptr (GFile) backup_location = NULL, parent = NULL;
+-		g_autofree gchar *filename = NULL;
+-
+-		/* Move the database directory away, for possible forensics */
+-		parent = g_file_get_parent (store);
+-		filename = g_strdup_printf ("files.%" G_GINT64_FORMAT, g_get_monotonic_time ());
+-		backup_location = g_file_get_child (parent, filename);
+-
+-		if (g_file_move (store, backup_location,
+-		                 G_FILE_COPY_NONE,
+-		                 NULL, NULL, NULL, NULL)) {
+-			g_autofree gchar *path = NULL;
+-
+-			path = g_file_get_path (backup_location);
+-			g_message ("Database is corrupt, it is now backed up at %s. Reindexing from scratch", path);
+-			sparql_conn = tracker_sparql_connection_new (get_fts_connection_flags (),
+-			                                             store,
+-			                                             ontology,
+-			                                             NULL,
+-			                                             &internal_error);
+-		}
++	g_autoptr (GFile) store = NULL;
++	g_autoptr (GFile) ontology = tracker_sparql_get_ontology_nepomuk ();
++	g_autofree gchar *path = NULL, *marker = NULL;
++	TrackerSparqlConnection *conn;
++
++	if (dry_run)
++		return open_store (NULL, ontology, NULL, error);
++
++	store = get_cache_dir (domain);
++	path = g_file_get_path (store);
++	marker = g_strconcat (path, ".reset-in-progress", NULL);
++	if (g_file_test (marker, G_FILE_TEST_EXISTS) && !discard_store (path, marker, error))
++		return NULL;
++
++	*initial_index = !g_file_test (path, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_SYMLINK);
++	conn = open_store (store, ontology, path, error);
++	if (!conn && !*initial_index) {
++		g_message ("Could not open filesystem index: %s. Discarding it and reindexing",
++		           (*error)->message);
++		g_clear_error (error);
++
++		if (!g_file_set_contents (marker, "", 0, error) ||
++		    !discard_store (path, marker, error))
++			return NULL;
++
++		*initial_index = TRUE;
++		conn = open_store (store, ontology, path, error);
+ 	}
+ 
+-	if (internal_error)
+-		g_propagate_error (error, internal_error);
++	if (conn)
++		tracker_error_report_init (store);
+ 
+-	return sparql_conn;
++	return conn;
+ }
+ 
+ int
+@@ -803,6 +879,7 @@ main (gint argc, gchar *argv[])
+ 	g_autofree char *dbus_name = NULL, *legacy_dbus_name = NULL;
+ 	TrackerFilesInterface *files_interface;
+ 	gboolean initial_index = TRUE;
++	gint cache_fd = -1;
+ 
+ 	main_loop = NULL;
+ 
+@@ -899,14 +976,15 @@ main (gint argc, gchar *argv[])
+ 	}
+ 
+ 	if (!dry_run) {
+-		GFile *store = get_cache_dir (domain_ontology);
+-
+-		initial_index = !g_file_query_exists (store, NULL);
+-		tracker_error_report_init (store);
+-		g_object_unref (store);
++		cache_fd = lock_cache (tracker_domain_ontology_get_cache (domain_ontology), &error);
++		if (cache_fd < 0) {
++			g_critical ("%s", error->message);
++			g_error_free (error);
++			return EXIT_FAILURE;
++		}
+ 	}
+ 
+-	sparql_conn = setup_connection (domain_ontology, &error);
++	sparql_conn = setup_connection (domain_ontology, &initial_index, &error);
+ 	if (!sparql_conn) {
+ 
+ 		g_critical ("Could not create store: %s",
+@@ -1029,5 +1107,8 @@ main (gint argc, gchar *argv[])
+ 	g_object_unref (memory_monitor);
+ #endif
+ 
++	if (cache_fd >= 0)
++		close (cache_fd);
++
+ 	return corrupted ? EXIT_FAILURE : EXIT_SUCCESS;
+ }
